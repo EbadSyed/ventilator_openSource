@@ -1,4 +1,4 @@
-//Defines
+ //Defines
 #define ENC_CLK_PIN 6
 #define ENC_DT_PIN 5
 #define ENC_SW_PIN 7
