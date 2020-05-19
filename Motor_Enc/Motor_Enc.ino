@@ -38,7 +38,7 @@ void setup() {
   pinMode(ENC_DT_PIN,INPUT);
   
   (ENC_SW_PIN,INPUT);
-  attachInterrupt(digitalPinToInterrupt(ENC_SW_PIN), updateFlag, CHANGE); // Setting Button on interrupt so we don't miss
+  attachInterrupt(digitalPinToInterrupt(ENC_SW_PIN), updateFlag, RISING); // Setting Button on interrupt so we don't miss
   
   Serial.begin(9600);
 
@@ -85,8 +85,8 @@ void updateCounter()
 
    // We dont want to breach the min and max values for Breating Rate and Tidal Volume
     breathingCount = constrain(breathingCount,8,18);
-    sweepInterval = map(breathingCount,8,18,7500,3333);
-    sweepInterval = constrain(sweepInterval,3333,7500);
+    sweepInterval = map(breathingCount,8,18,7500,1000);
+    sweepInterval = constrain(sweepInterval,1000,7500);
 
     volume = constrain(volume,150,200);
     maxAngle = map(volume,150,200,100,300);
@@ -115,7 +115,7 @@ void servoSweep()
     Serial.print("Motor Angle  ");
     Serial.println(pos);
     
-    if ((pos >= maxAngle) && (millis() - lastUpdateSweep > compressInterval)) // end of sweep 
+    if (pos >= maxAngle) // end of sweep 
     {
       // reverse direction
       increment = -increment;
