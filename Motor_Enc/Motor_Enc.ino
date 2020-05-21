@@ -9,7 +9,7 @@ volatile byte ventModeState = LOW;
 
 // Interrupt can be only on these pins 2, 3, 18, 19, 20, 21
 
-int breathingCount = 8;
+int breathingCount = 18;
 
 // States to for maintaing Rotatatory Encoder
 int state;
@@ -25,7 +25,7 @@ unsigned long lastUpdateSweep = 0; //last update of sweep
 
 unsigned long compressInterval = 1500; //Time to wait at Max Compress position
 
-unsigned long sweepInterval = 7500; // Time between compressions/sweeps
+unsigned long sweepInterval = 1000; // Time between compressions/sweeps
 
 int maxAngle = 300; // Max angle to be compressed
 
@@ -53,8 +53,8 @@ void loop() {
   
   state = digitalRead(ENC_CLK_PIN); // check if ROT Encoder has changed // Put this on Interrupt after Interrupt Test
   updateCounter(); // Adjust Breathing Rate or Tidal Volume
-  servoSweep(); // Update Motor Position
-
+  servoSweep();
+  Serial.println(ventModeState);
   
 }
 
@@ -112,10 +112,10 @@ void servoSweep()
     
     servo.write(pos);
     
-    Serial.print("Motor Angle  ");
-    Serial.println(pos);
+    //Serial.print("Motor Angle  ");
+    //Serial.println(pos);
     
-    if (pos >= maxAngle) // end of sweep 
+    if ((pos >= maxAngle)) // end of sweep 
     {
       // reverse direction
       increment = -increment;
