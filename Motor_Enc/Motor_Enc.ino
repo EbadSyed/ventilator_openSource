@@ -1,4 +1,5 @@
 #include <Servo.h>
+#include <LiquidCrystal_I2C.h>
 
 #define ENC_CLK_PIN 6
 #define ENC_DT_PIN 5
@@ -6,6 +7,8 @@
 const byte ENC_SW_PIN = 2; // Needs to be on of the interrupt pin
 
 volatile byte ventModeState = LOW;
+
+volatile byte dispUpdate = LOW;
 
 // Interrupt can be only on these pins 2, 3, 18, 19, 20, 21
 
@@ -31,14 +34,28 @@ int maxAngle = 300; // Max angle to be compressed
 
 int volume = 200; // volume and Max angles are related
 
+//Init Servo
 Servo servo;
 
+// Set the LCD address to 0x27 for a 20 chars and 4 line display
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+
 void setup() {
+
   pinMode(ENC_CLK_PIN,INPUT);
   pinMode(ENC_DT_PIN,INPUT);
   
   (ENC_SW_PIN,INPUT);
   attachInterrupt(digitalPinToInterrupt(ENC_SW_PIN), updateFlag, RISING); // Setting Button on interrupt so we don't miss
+
+  // initialize the LCD
+  lcd.init();
+
+  // Turn on the blacklight and print a message.
+  lcd.backlight();
+
+  lcd.print(" Ventilator System");
+  updateDisplay();
   
   Serial.begin(9600);
 
@@ -53,8 +70,15 @@ void loop() {
   
   state = digitalRead(ENC_CLK_PIN); // check if ROT Encoder has changed // Put this on Interrupt after Interrupt Test
   updateCounter(); // Adjust Breathing Rate or Tidal Volume
+
+  // Update Display only if Encoder has been adjusted 
+  if(dispUpdate){
+    updateDisplay();
+  }
+
+  // Update Motor Position
   servoSweep();
-  Serial.println(ventModeState);
+  
   
 }
 
@@ -63,6 +87,7 @@ void updateCounter()
 {
   if(state != Laststate)
   {
+    dispUpdate = HIGH;
     if(digitalRead(ENC_DT_PIN) != state)
     {
       if(ventModeState)
@@ -128,6 +153,21 @@ void servoSweep()
       lastUpdateSweep = millis();
     }
   }
+}
+
+void updateDisplay()
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Tidal Volume");
+  lcd.setCursor(14,0);
+  lcd.print(volume);
+  lcd.setCursor(0,2);
+  lcd.print("RR ");
+  lcd.setCursor(14,2);
+  lcd.print(breathingCount);
+
+  dispUpdate = LOW;
 }
 
 void updateFlag()
